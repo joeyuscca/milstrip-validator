@@ -10,8 +10,7 @@
     "test-once": "jest --collectCoverage --coverageReporters lcov clover",
     "lint": "eslint ./src --ext .ts,.tsx",
     "lint-fix": "eslint ./src --ext .ts,.tsx --fix",
-    "build": "tsc",
-    "publish": "cd dist && npm publish"
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.17",
