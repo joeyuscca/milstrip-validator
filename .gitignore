@@ -1,0 +1,11 @@
+node_modules
+
+coverage
+TESTS*.xml
+dist/**/*.js
+dist/**/*.ts
+dist/**/*.map
+
+.DS_Store
+*debug.log
+.vscode
