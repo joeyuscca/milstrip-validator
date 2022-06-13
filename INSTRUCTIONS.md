@@ -21,9 +21,11 @@ You have been tasked with developing a MILSTRIP validator library, which will ul
 
 ## Requirements
 
+Before you get started, fork or otherwise publish a copy of this repo to your own GitHub or other SCM account to work in and ultimately share your completed solution.
+
 ### Functional
 
-- The library shall expose an interface *functionally* equivalent to the following:
+- The library shall expose an interface equivalent to the following (pre-scaffolded for you at `src/validator/validator.ts`):
 
   ```typescript
   interface IValidator {
@@ -31,8 +33,9 @@ You have been tasked with developing a MILSTRIP validator library, which will ul
   }
   ```
 
+- Any positions not covered by specific requirements may be empty spaces or any other character.
+
 - The error, "Invalid Length" shall be returned when the submitted MILSTRIP is less than or greater than 80 characters in length.
-  - Any positions not covered by specific requirements may be empty spaces or any other character.
 
 - The error, "Invalid Document Identifier" shall be returned when the the first three characters of a MILSTRIP (positions 1-3) do not conform to the following:
   - The position 1 character must be a "D"
