@@ -1,10 +1,10 @@
-import { IClassName, ClassName } from './validator';
+import { IValidator, Validator } from './validator';
 
-describe('ClassName', () => {
-  let classUnderTest: IClassName;
+describe('Validator', () => {
+  let classUnderTest: IValidator;
 
   beforeEach(() => {
-    classUnderTest = new ClassName();
+    classUnderTest = new Validator();
   });
 
   it('should construct', () => {

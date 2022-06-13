@@ -1,7 +1,9 @@
-export interface IClassName {
-
+export interface IValidator {
+  Validate(milstrip: string): string[];
 }
 
-export class ClassName implements IClassName {
-
+export class Validator implements IValidator {
+  Validate(_milstrip: string): string[] {
+    return [];
+  }
 }
