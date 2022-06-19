@@ -25,11 +25,11 @@ describe('Validator', () => {
       'Invalid Unit of Issue (U/I)',
       'Invalid Quantity',
       'Invalid DoDAAC',
-      // 'Invalid Date',
-      // 'Invalid Serial',
-      // 'Invalid Signal Code',
-      // 'Invalid Fund Code',
-      // 'Invalid Priority Designator Code',
+      'Invalid Date',
+      'Invalid Serial',
+      'Invalid Signal Code',
+      'Invalid Fund Code',
+      'Invalid Priority Designator Code'
     ];
     const actualErrors = classUnderTest.Validate(generateMilstripWithContentAtIndex(0, '') + '_');
     expect(expectedErrors.every(e => actualErrors.includes(e))).toBeTruthy();
@@ -185,5 +185,93 @@ describe('Validator', () => {
       .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '111a.1')))
       .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '1111a.')));
     expect(errors.filter(e => e === 'Invalid DoDAAC').length).toEqual(6);
+  });
+
+  it('should not return errors including "Invalid Date" when given a milstrip with an accurate julian date', () => {
+    const currentYearsLastDigit = new Date().getFullYear().toString().slice(3);
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(35, `${currentYearsLastDigit}001`))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(35, `${currentYearsLastDigit}366`)))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(35, `${currentYearsLastDigit}199`)))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(35, `${currentYearsLastDigit}299`)));
+    expect(errors).not.toContain('Invalid Date');
+  });
+
+  it('should return errors including "Invalid Date" when given a milstrip with a date that does not start with the last digit of the current year', () => {
+    const nextYearsLastDigit = new Date().setFullYear(new Date().getFullYear() + 1).toString().slice(3);
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(35, `${nextYearsLastDigit}001`));
+    expect(errors).toContain('Invalid Date');
+  });
+
+  it('should return errors including "Invalid Date" when given a milstrip with a date that does not contain an accurate julian date range', () => {
+    const currentYearsLastDigit = new Date().getFullYear().toString().slice(3);
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(35, `${currentYearsLastDigit}000`))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(35, `${currentYearsLastDigit}367`)));
+    expect(errors.filter(e => e === 'Invalid Date').length).toEqual(2);
+  });
+
+  it('should not return errors including "Invalid Serial" when given a milstrip with a valid serial', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(39, '001'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(39, '010')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(39, '999')));
+    expect(errors).not.toContain('Invalid Serial');
+  });
+
+  it('should return errors including "Invalid Serial" when given a milstrip with a serial that does contains non-numeric characters', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(39, '.00'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(39, '0.0')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(39, '01.')));
+    expect(errors.filter(e => e === 'Invalid Serial').length).toEqual(3);
+  });
+
+  it('should return errors including "Invalid Serial" when given a milstrip with a serial less than 001', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(39, '000'));
+    expect(errors).toContain('Invalid Serial');
+  });
+
+  it('should return errors including "Invalid Signal Code" when given a milstrip with a signal code not like one of: [A, B, C, J, K, L]', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'a'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'b')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'c')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'j')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'k')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'l')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, '0')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, '.')));
+    expect(errors.filter(e => e === 'Invalid Signal Code').length).toEqual(8);
+  });
+
+  it('should not return errors including "Invalid Signal Code" when given a milstrip with a signal code like one of: [A, B, C, J, K, L]', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'A'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'B')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'C')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'J')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'K')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(50, 'L')));
+    expect(errors).not.toContain('Invalid Signal Code');
+  });
+
+  it('should not return errors including "Invalid Fund Code" when given a milstrip with a valid alphanumeric fund code ', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(51, 'A1'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(51, '1A')));
+    expect(errors).not.toContain('Invalid Fund Code');
+  });
+
+  it('should return errors including "Invalid Fund Code" when given a milstrip with a fund code containing symbols', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(51, 'A.'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(51, '.A')));
+    expect(errors.filter(e => e === 'Invalid Fund Code').length).toEqual(2);
+  });
+
+  it('should return errors including "Invalid Priority Designator Code" when given a milstrip with a fund code containing symbols', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(59, '00'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(59, '.1')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(59, '16')));
+    expect(errors.filter(e => e === 'Invalid Priority Designator Code').length).toEqual(3);
+  });
+
+  it('should not return errors including "Invalid Priority Designator Code" when given a milstrip with a valid priority designator code between 01 and 15', () => {
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(59, '01'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(59, '15')));
+    expect(errors).not.toContain('Invalid Priority Designator Code');
   });
 });

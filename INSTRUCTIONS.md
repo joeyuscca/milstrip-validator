@@ -67,8 +67,8 @@ Before you get started, fork or otherwise publish a copy of this repo to your ow
 - The error, "Invalid DoDAAC" shall be returned when characters at positions 30-35 are not alphanumeric
 
 - The error, "Invalid Date" shall be returned when characters at positions 36-39 do not represent a Julian date:
-  - The characters at positions 36-37 are numeric and accurately represent the current year (2022 would be "22")
-  - The characters at positions 38-39 are numeric and between the range 1-366
+  - The character at position 36 is numeric and accurately represents the last digit of the current year (2022 would be "2")
+  - The characters at positions 37-39 are numeric and between the range 001-366
 
 - The error, "Invalid Serial" shall be returned when characters at positions 40-43 are not numeric and between the range 001-999
 
