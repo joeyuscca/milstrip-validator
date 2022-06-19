@@ -82,6 +82,8 @@ Before you get started, fork or otherwise publish a copy of this repo to your ow
 - All detected validation errors shall be returned so that clients can take further action.
   - i.e. The validator will not stop at the first error, but return all detectable errors.
 
+- Validate shall not return multiples of the same error.
+
 ### Non-functional
 
 - All tests included in `src/validator/validator.spec.ts` must pass.  These serve as an oracle for meeting the above functional requirements.

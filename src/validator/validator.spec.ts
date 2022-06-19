@@ -14,8 +14,9 @@ describe('Validator', () => {
     expect(classUnderTest).toBeDefined();
   });
 
-  it('should return all errors when given a completely invalid milstrip', () => {
+  it('should return exactly one of every error when given a completely invalid milstrip', () => {
     const expectedErrors = [
+      'Invalid Length',
       'Invalid Document Identifier',
       'Invalid Routing Identifier',
       'Invalid Media and Status Code',
@@ -32,6 +33,7 @@ describe('Validator', () => {
     ];
     const actualErrors = classUnderTest.Validate(generateMilstripWithContentAtIndex(0, '') + '_');
     expect(expectedErrors.every(e => actualErrors.includes(e))).toBeTruthy();
+    expect(expectedErrors.length).toEqual(actualErrors.length);
   });
 
   it('should not return errors including "Invalid Length" when given a milstrip that is 80 characters', () => {
@@ -60,7 +62,8 @@ describe('Validator', () => {
   });
 
   it('should return errors including "Invalid Document Identifier" when given a milstrip with a document identifier with a non alphanumeric 2nd or 3rd character', () => {
-    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(0, 'D..'));
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(0, 'D.a'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(0, 'Da.')));
     expect(errors.filter(e => e === 'Invalid Document Identifier').length).toEqual(2);
   });
 
@@ -80,7 +83,8 @@ describe('Validator', () => {
   });
 
   it('should return errors including "Invalid Routing Identifier" when given a milstrip with a routing identifier with a symbol as the 2nd or 3rd character', () => {
-    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(3, 'a..'));
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(3, 'a.a'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(3, 'aa.')));
     expect(errors.filter(e => e === 'Invalid Routing Identifier').length).toEqual(2);
   });
 
@@ -103,7 +107,10 @@ describe('Validator', () => {
   });
 
   it('should return errors including "Invalid Federal Supply Class (FSC)" when given a milstrip with a federal supply class consisting of non-numeric characters', () => {
-    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(7, 'aaaa'));
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(7, 'a111'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(7, '1a11')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(7, '11a1')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(7, '111a')));
     expect(errors.filter(e => e === 'Invalid Federal Supply Class (FSC)').length).toEqual(4);
   });
 
@@ -113,12 +120,21 @@ describe('Validator', () => {
   });
 
   it('should return errors including "Invalid National Item Identification Number (NIIN)" when given a milstrip with a non numeric NIIN', () => {
-    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(11, 'aaa-aaa-aaa'));
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(11, 'a11-111-111'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '1a1-111-111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '11a-111-111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111-a11-111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111-1a1-111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111-11a-111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111-111-a11')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111-111-1a1')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111-111-11a')));
     expect(errors.filter(e => e === 'Invalid National Item Identification Number (NIIN)').length).toEqual(9);
   });
 
   it('should return errors including "Invalid National Item Identification Number (NIIN)" when given a milstrip with NIIN without valid "-" separators', () => {
-    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111_111_111'));
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111_111-111'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(11, '111-111_111')));
     expect(errors.filter(e => e === 'Invalid National Item Identification Number (NIIN)').length).toEqual(2);
   });
 
@@ -142,13 +158,17 @@ describe('Validator', () => {
   });
 
   it('should return errors including "Invalid Quantity" when given a milstrip with a non numeric quantity', () => {
-    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(24, 'aaaaa'));
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(24, 'a1111'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(24, '1a111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(24, '11a11')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(24, '111a1')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(24, '1111a')));
     expect(errors.filter(e => e === 'Invalid Quantity').length).toEqual(5);
   });
 
   it('should return errors including "Invalid Quantity" when given a milstrip with a quantity of 0', () => {
     const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(24, '00000'));
-    expect(errors.filter(e => e === 'Invalid Quantity').length).toEqual(1);
+    expect(errors).toContain('Invalid Quantity');
   });
 
   it('should not return errors including "Invalid DoDAAC" when given a milstrip with a valid DoDAAC', () => {
@@ -158,7 +178,12 @@ describe('Validator', () => {
   });
 
   it('should return errors including "Invalid DoDAAC" when given a milstrip with a DoDAAC containing symbols', () => {
-    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '......'));
+    const errors = classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '.aaaaa'))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(29, 'a.1111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '1a.111')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '11a.11')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '111a.1')))
+      .concat(classUnderTest.Validate(generateMilstripWithContentAtIndex(29, '1111a.')));
     expect(errors.filter(e => e === 'Invalid DoDAAC').length).toEqual(6);
   });
 });
